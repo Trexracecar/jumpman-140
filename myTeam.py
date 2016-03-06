@@ -94,16 +94,38 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
     successor = self.getSuccessor(gameState, action)
     features['successorScore'] = self.getScore(successor)
 
+    myState = successor.getAgentState(self.index)
+    myPos = myState.getPosition()
+    food = self.getFood(gameState)
+    foodList = food.asList()
+
+    enemies = [succesor.getAgentState(i) for i in self.getOpponents(successor)]
+    capsules = [capsule for capsule in self.getCapsule(successor)]
+    num_enemies = len(enemies)
+
+    closest_enemy = min([self.getMazeDistance(myPos, enemy), successor.getAgenState
+    closest_capsule = min([self.getMazeDistance(myPos, capsule) for capsule in capsules])
+
+    if closest_enemy[0] > 0 and closest_enemy[0] < closest_enemy[1]:
+      features['ghostScared'] = 1
+      features['ghostDistance'] = 200.0/closest_enemy[0]
+    else:
+      features['ghostScared'] = 0
+      fetures['ghostDistance'] = -500.0/closest_enemy[0]
+    features['numFood'] = len(foodList)
+
     # Compute distance to the nearest food
     foodList = self.getFood(successor).asList()
     if len(foodList) > 0: # This should always be True,  but better safe than sorry
       myPos = successor.getAgentState(self.index).getPosition()
       minDistance = min([self.getMazeDistance(myPos, food) for food in foodList])
-      features['distanceToFood'] = minDistance
+      features['distanceToFood'] = 1.0/minDistance
+
+
     return features
 
   def getWeights(self, gameState, action):
-    return {'successorScore': 100, 'distanceToFood': -1}
+    return {'successorScore': 100, 'distanceToFood': -1, 'ghostDistance': 1, 'numFood':10}
 
 class DefensiveReflexAgent(ReflexCaptureAgent):
   """
